@@ -1,0 +1,108 @@
+#include<iostream>
+#include<type_traits>
+#include<string>
+#include<cstdlib>
+#include<assert.h>
+#include<boost/compressed_pair.hpp>
+using namespace std;
+using namespace boost;
+class empty1
+{
+
+};
+class empty2
+{
+
+};
+
+template<typename T1,typename T2>inline
+compressed_pair<T1, T2> make_compressed_pair(T1 t1, T2 t2)
+{
+	return compressed_pair<T1, T2>(t1, t2);
+}
+
+//template<typename T1,typename T2>//普通比较，有缺陷
+//bool operator==(compressed_pair<T1, T2>& l, compressed_pair<T1, T2>& r)
+//{
+//	return l.first() == r.first() && l.second() == r.second();
+//}
+template<typename P,int version>
+struct _compare
+{
+	bool operator()(const P&l, const P& r)
+	{
+		cout << "all empty" << endl;
+		return false;
+	}
+};
+template<typename P>
+struct _compare<P,0>
+{
+	bool operator()(const P& l , const P& r)
+	{
+		cout << "all not empty" << endl;
+		return l.first() == r.first() && l.second() == r.second();
+	}
+};
+template<typename P>
+struct _compare<P, 1>
+{
+	bool operator()(const P& l , const P& r)
+	{
+		cout << "1 empty" << endl;
+		return l.second() == r.second();
+	}
+};
+template<typename P>
+struct _compare<P, 2>
+{
+	bool operator()(const P& l, const P& r)
+	{
+		cout << "2 empty" << endl;
+		return l.first() ==  r.first();
+	}
+};
+template<typename T1,typename T2>
+bool operator==(const compressed_pair<T1, T2>& l, const compressed_pair<T1, T2>& r)
+{
+	typedef  compressed_pair<T1, T2> pair_type;
+	typedef  boost::details::compressed_pair_switch<T1, T2, boost::is_same<typename boost::remove_cv<T1>::type, typename
+		boost::remove_cv<T2>::type>::value,boost::is_empty<T1>::value, boost::is_empty<T2>::value> version;
+
+	return _compare<pair_type, version::value>()(l, r);
+}
+
+template<typename T1, typename T2>
+bool operator!=(const compressed_pair<T1, T2>& l, const compressed_pair<T1, T2>& r)
+{
+	return !(l == r);
+}
+int main()
+{
+	compressed_pair<int, string> cp;
+	/*assert(cp.second().empty());
+	cp.first() = 10;
+	cp.second() = "hello";
+	assert(10 == cp.first());
+	assert(!cp.second().empty());*/
+	cout << sizeof(cp) << endl;
+	cp.first() = 2;
+	cout << sizeof(cp) << endl;
+	cp.second() = "hello";
+	cout << sizeof(cp) << endl;
+	compressed_pair<empty1, empty2>cp1;
+	cout << sizeof(cp1) << endl;
+	compressed_pair<int, empty2>cp2;
+	cout << sizeof(cp2) << endl;
+	compressed_pair<empty1, string>cp3;
+	cout << sizeof(cp3) << endl;
+	//ebo压缩机制，通过继承的手段进行压缩
+
+	auto cp4 = make_compressed_pair(10, "char");
+	auto cp5 = make_compressed_pair(3.14,empty1());
+
+	compressed_pair<int, double>cp6(10, 0), cp7(10, 0);
+	cp6 == cp7;
+	compressed_pair<int, empty1>cp8(10), cp9(10);
+	cp8 == cp9;
+}
