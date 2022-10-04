@@ -1,0 +1,24 @@
+#include<iostream>
+#include<assert.h>
+#include<boost/utility/addressof.hpp>
+using namespace std;
+using namespace boost;
+class dont_do_this
+{
+public:
+	int x, y;
+	size_t operator&()const
+	{
+		return (size_t)&y;
+	}
+};
+int main()
+{
+	dont_do_this d;
+	assert(&d != (size_t)boost::addressof(d));
+	assert(&d == (size_t)&d.y);
+	cout << &d << endl;
+	cout << (size_t)boost::addressof(d) << endl;
+}
+//addressof总能获得最真实的地址
+//不要重载operator&
