@@ -1,0 +1,75 @@
+#include<iostream>
+#include<boost/polymorphic_cast.hpp>
+#include<boost/static_assert.hpp>
+using namespace std;
+using namespace boost;
+//只是对danamic_cast的简单包装，做了空指针检查，会抛出异常
+//只可以交叉转型或者向下转型
+struct base1
+{
+	virtual ~base1() {  }
+};
+struct base2
+{
+	 virtual ~base2() { }
+};
+struct derived :public base1, public base2
+{
+	virtual ~derived() {}
+};
+struct derived2 :public base1
+{
+	virtual ~derived2() {}
+};
+
+//自定义对引用重载，可以让polymorphic_cast对引用操作
+template<typename Source,typename Target>inline
+Target  polymorphic_downcast(Source& x)
+{
+	BOOST_STATIC_ASSERT(is_reference<Target>::value);
+	typedef typename remove_reference<Target>::value T;
+	typedef Source S;
+
+	BOOST_STATIC_ASSERT(is_polymorphic<T>::value);
+	BOOST_STATIC_ASSERT(is_polymorphic<S>::value);
+	BOOST_STATIC_ASSERT(is_base_of<S, T>::value);
+	return dynamic_cast<Target>(x);
+}
+template<typename Source, typename Target>inline
+Target  polymorphic_cast(Source& x)
+{
+	BOOST_STATIC_ASSERT(is_reference<Target>::value);
+	typedef typename remove_reference<Target>::value T;
+	typedef Source S;
+
+	BOOST_STATIC_ASSERT(is_polymorphic<T>::value);
+	BOOST_STATIC_ASSERT(is_polymorphic<S>::value);
+	return dynamic_cast<Target>(x);
+}
+int main()
+{
+	//base1 * p = new derived;
+	//derived* pd = dynamic_cast<derived*>(p);//向下转型
+	//base2* pd2 = dynamic_cast<derived*>(p);//交叉转型
+	//cout << pd << endl;
+	//cout << pd2 << endl;dynamic_cast的用法
+
+	//base1* p1 = new derived;
+	//derived2* p2 = polymorphic_cast<derived2*>(p1);//转换异常,只可以向下转型
+
+	base1* p = new derived;
+	derived* pd = polymorphic_cast<derived*>(p);
+	base2* pd2 = polymorphic_cast<base2*>(p);
+
+	try
+	{
+		derived2* p2 = polymorphic_cast<derived2*>(p);
+		string* ps = polymorphic_cast<string*>(p);
+	}
+	catch(bad_cast&e)
+	{
+		cout << e.what() << endl;
+	}
+
+
+}
