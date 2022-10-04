@@ -1,0 +1,66 @@
+#include<iostream>
+#include<string>
+#include<complex>
+#include<boost/utility/base_from_member.hpp>
+using namespace std;
+class base
+{
+public:
+	base(complex<int> x)
+	{
+		cout << "base ctor " << endl;
+		cout << x << endl;
+	}
+};
+class Derived :private boost::base_from_member<complex<int>>,public base
+{
+	
+public:
+	Derived(int a, int b):base_from_member<complex<int>>(a, b), base(member)
+	{
+		
+		cout << "derived ctor" << endl;
+		cout << member << endl;
+	}
+};
+class derived :public base
+{
+private:
+	complex<int>x;
+public:
+	derived(int a, int b) :x(a, b), base(x)
+	{
+
+		cout << "derived ctor" << endl;
+		cout << x << endl;
+	}
+};
+
+class base2
+{
+public:
+	base2(string& x, string& y)
+	{
+		cout << "base2 ctor" << endl;
+		cout << x << y << endl;
+	}
+};
+class derived1 :private boost::base_from_member<complex<int>>, private boost::base_from_member<string, 1>,
+	boost::base_from_member<string, 2>, public base, public base2
+{
+	typedef base_from_member<complex<int>> pbase_type;
+	typedef base_from_member<string,1> pbase_type1;
+	typedef base_from_member<string,2> pbase_type2;
+public:
+	derived1(int a, int b):pbase_type(a,b),pbase_type1("str1"),pbase_type2("str2"),base(pbase_type::member),base2(pbase_type1::member,pbase_type2::member)
+	{
+		cout << "derived ctor" << endl;
+		cout << pbase_type::member << endl;
+	}
+};
+int main()
+{
+	//derived d(10, 20); 由于类对象优先构造base，而x还未拥有地址,所以错误
+	Derived d(10, 20);
+	derived1(10, 20);
+}
