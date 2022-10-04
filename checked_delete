@@ -1,0 +1,36 @@
+#include<iostream>
+#include<boost/checked_delete.hpp>
+#include<algorithm>
+#include<vector>
+using namespace std;
+using namespace boost;
+
+struct my_checked_deleter
+{
+	
+	template<typename T>
+	void operator()(T* x)const
+	{
+		checked_delete(x);
+	}
+};
+
+class demo_class;
+void do_delete1(demo_class* p)
+{
+	checked_delete(p);
+}
+class demo_class
+{
+	int x;
+};
+int main()
+{
+	
+	auto p = new int(10);
+	my_checked_deleter()(p);
+	vector<int*> v;
+	v.push_back(new int(10));
+	for_each(v.begin(), v.end(), my_checked_deleter());
+
+	d
