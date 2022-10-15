@@ -46,13 +46,14 @@ public:
 	}
 };
 class derived1 :private boost::base_from_member<complex<int>>, private boost::base_from_member<string, 1>,
-	boost::base_from_member<string, 2>, public base, public base2
+	boost::base_from_member<string, 2>, public base, public base2//解决了重命名问题，使用1，2区分
 {
 	typedef base_from_member<complex<int>> pbase_type;
 	typedef base_from_member<string,1> pbase_type1;
 	typedef base_from_member<string,2> pbase_type2;
 public:
-	derived1(int a, int b):pbase_type(a,b),pbase_type1("str1"),pbase_type2("str2"),base(pbase_type::member),base2(pbase_type1::member,pbase_type2::member)
+	derived1(int a, int b):pbase_type(a,b),pbase_type1("str1"),pbase_type2("str2"),base(pbase_type::member),
+	base2(pbase_type1::member,pbase_type2::member)
 	{
 		cout << "derived ctor" << endl;
 		cout << pbase_type::member << endl;
