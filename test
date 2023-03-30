@@ -1,1 +1,1 @@
-for a in(range(1,10),):[print(f'{a:=}*{b}={a*b}',end=' ')for b in a]
+for a in range(1,10):print(*[f"{j}*{a}={j*a}"for j in range(1,a+1)])
